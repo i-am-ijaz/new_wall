@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:new_wall/ui/screens/main_screen.dart';
 
 import 'firebase_options.dart';
-import 'providers/change_theme_provider.dart';
 import 'theme/theme.dart';
 
 Future<void> main() async {
@@ -19,18 +18,15 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentTheme = ref.watch(changeTheme);
+  Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'New Wall',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: currentTheme.darkMode ? ThemeMode.dark : ThemeMode.light,
       home: const MainScreen(),
     );
   }

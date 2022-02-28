@@ -11,14 +11,5 @@ class AppTheme {
       ),
     ),
   );
-  static final darkTheme = ThemeData(
-    scaffoldBackgroundColor: Colors.black,
-    primarySwatch: Colors.teal,
-    backgroundColor: Colors.black,
-    textTheme: const TextTheme(
-      bodyText1: TextStyle(
-        color: Colors.white,
-      ),
-    ),
-  );
+ 
 }
