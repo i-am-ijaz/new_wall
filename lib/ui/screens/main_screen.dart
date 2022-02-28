@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:new_wall/ui/screens/all_images/all_images_screen.dart';
-import 'package:new_wall/ui/screens/view_wallpaper/favorities.dart';
+import 'package:new_wall/ui/screens/favorities/favorities.dart';
 import 'package:new_wall/ui/screens/home/home.dart';
 import 'package:new_wall/ui/widgets/custom_app_bar.dart';
 
