@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:wallpaper/wallpaper.dart';
@@ -17,6 +19,7 @@ class _ViewWallScreenState extends State<ViewWallScreen> {
   Stream<String>? progressString;
   String res = '';
   bool downloading = false;
+  
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -84,7 +87,7 @@ class _ViewWallScreenState extends State<ViewWallScreen> {
                                       widget.imageUrl,
                                     );
                                     // await imageDownloadDialog();
-                                    final home = await Wallpaper.homeScreen(
+                                    await Wallpaper.homeScreen(
                                       options: RequestSizeOptions.RESIZE_FIT,
                                       width: size.width,
                                       height: size.height,
@@ -135,26 +138,26 @@ class _ViewWallScreenState extends State<ViewWallScreen> {
 
   Future<void> dowloadImage(BuildContext context, String imageUrl) async {
     progressString = Wallpaper.imageDownloadProgress(imageUrl);
-    print(progressString);
+    log(progressString.toString());
     progressString!.listen((data) {
       setState(() {
         res = data;
         downloading = true;
       });
-      print("DataReceived: " + data);
+      log("DataReceived: " + data);
     }, onDone: () async {
       setState(() {
         downloading = false;
 
         // _isDisable = false;
       });
-      print("Task Done");
+      log("Task Done");
     }, onError: (error) {
       setState(() {
         downloading = false;
         // _isDisable = true;
       });
-      print("Some Error");
+      log("Some Error");
     });
   }
 
@@ -174,7 +177,7 @@ class _ViewWallScreenState extends State<ViewWallScreen> {
                   const SizedBox(height: 20.0),
                   Text(
                     "Downloading File : $res",
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   )
                 ],
               ),

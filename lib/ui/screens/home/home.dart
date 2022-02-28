@@ -1,7 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:new_wall/screens/category_wallpapers/category_wallpapers.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import 'package:new_wall/ui/screens/category_wallpapers/category_wallpapers.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -21,15 +23,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    widget.snapshot.data!.docs.map((DocumentSnapshot doc) {
-      Map<String, dynamic> data = doc.data()! as Map<String, dynamic>;
-      var category = data['tag'];
-      // print(category);
-      if (!categories.contains(category)) {
-        categories.add(category);
-        categoryImages.add(data['url']);
-      }
-    }).toList();
+    widget.snapshot.data!.docs.map(
+      (DocumentSnapshot doc) {
+        Map<String, dynamic> data = doc.data()! as Map<String, dynamic>;
+
+        var category = data['tag'];
+
+        if (!categories.contains(category)) {
+          categories.add(category);
+          categoryImages.add(data['url']);
+        }
+      },
+    ).toList();
   }
 
   @override
@@ -72,18 +77,22 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CategoryWallpapers(
-                    category: categories[index],
-                  ),
-                ),
-              );
+              viewWallpapersCaltegoryPage(context, index);
             },
           ),
         );
       },
+    );
+  }
+
+  void viewWallpapersCaltegoryPage(BuildContext context, int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CategoryWallpapers(
+          category: categories[index],
+        ),
+      ),
     );
   }
 }

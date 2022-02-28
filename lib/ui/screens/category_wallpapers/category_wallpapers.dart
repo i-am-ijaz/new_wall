@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:new_wall/screens/view_wallpaper/view_wallpaper.dart';
+
+import 'package:new_wall/ui/screens/view_wallpaper/view_wallpaper.dart';
 
 class CategoryWallpapers extends StatefulWidget {
   const CategoryWallpapers({Key? key, required this.category})
