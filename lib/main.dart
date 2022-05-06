@@ -1,21 +1,40 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:new_wall/ui/screens/main_screen.dart';
+import 'package:hive/hive.dart';
+import 'package:new_wall/ui/theme/theme.dart';
+import 'package:new_wall/ui/widgets/constants.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'firebase_options.dart';
-import 'theme/theme.dart';
+import 'ui/screens/main_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await initApp();
+
   runApp(
     const ProviderScope(
       child: MyApp(),
     ),
   );
+}
+
+Future<void> initApp() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  var docDir = await getApplicationDocumentsDirectory();
+  Hive.init(docDir.path);
+
+  var favBox = await Hive.openBox(Constants.favBox);
+  // await Hive.box(Constants.favBox).clear();
+
+  if (favBox.get(Constants.favListKey) == null) {
+    favBox.put(Constants.favListKey, []);
+  }
 }
 
 class MyApp extends StatelessWidget {

@@ -1,38 +1,67 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter/material.dart';
 
-class AllImagesScreen extends StatefulWidget {
-  const AllImagesScreen({Key? key, required this.snapshot}) : super(key: key);
-  final AsyncSnapshot<QuerySnapshot> snapshot;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:new_wall/models/wallpaper/wallpaper.dart';
+import 'package:new_wall/providers/fav_wallpaper_provider.dart';
+import 'package:new_wall/ui/widgets/wallpaper_widget.dart';
+
+class AllImagesScreen extends ConsumerWidget {
+  const AllImagesScreen({
+    Key? key,
+    required this.wallpaperList,
+  }) : super(key: key);
+  final List<Wallpaper> wallpaperList;
 
   @override
-  State<AllImagesScreen> createState() => _AllImagesScreenState();
-}
-
-class _AllImagesScreenState extends State<AllImagesScreen> {
-  CollectionReference wallpapers =
-      FirebaseFirestore.instance.collection('wallpapers');
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-      ),
-      children: widget.snapshot.data!.docs.map((DocumentSnapshot document) {
-        Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
-        return Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: GridTile(
-            child: CachedNetworkImage(
-              imageUrl: data['url'],
-              fit: BoxFit.cover,
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            backgroundColor: Colors.green.shade100,
+            flexibleSpace: const FlexibleSpaceBar(
+              title: Text(
+                'Trending',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
+            pinned: true,
+            floating: true,
+            expandedHeight: 180,
           ),
-        );
-      }).toList(),
+          SliverToBoxAdapter(
+            child: GridView.builder(
+              itemCount: wallpaperList.length,
+              primary: false,
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 5 / 8,
+              ),
+              itemBuilder: (context, index) {
+                var wallpaper = wallpaperList[index];
+                final isFav =
+                    ref.watch(favProvider).isFav(wallpaperList[index]);
+
+                return WallpaperWidget(
+                  wallpaper: wallpaper,
+                  isFav: isFav,
+                  wallpaperList: wallpaperList,
+                  index: index,
+                );
+              },
+            ),
+          )
+        ],
+      ),
     );
   }
 }
