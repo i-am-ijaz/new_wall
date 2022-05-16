@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:new_wall/models/wallpaper/wallpaper.dart';
 
+import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'category_wallpapers/category_wallpapers.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -14,7 +14,7 @@ class CategoryScreen extends StatefulWidget {
 
   @override
   State<CategoryScreen> createState() => _CategoryScreenState();
-}
+}  
 
 class _CategoryScreenState extends State<CategoryScreen> {
   List<String> categories = [];
@@ -55,50 +55,56 @@ class _CategoryScreenState extends State<CategoryScreen> {
             expandedHeight: 180,
           ),
           SliverToBoxAdapter(
-            child: GridView.builder(
-              itemCount: categories.length,
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 1,
-              ),
-              itemBuilder: (context, index) {
-                return Material(
-                  color: Colors.transparent,
-                  child: InkResponse(
-                    child: Container(
-                      margin: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                          image: CachedNetworkImageProvider(
-                            categoryImages[index],
-                          ),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        categories[index].toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.combine(
-                            [
-                              TextDecoration.underline,
-                              TextDecoration.overline,
-                            ],
-                          ),
-                          decorationStyle: TextDecorationStyle.double,
-                        ),
-                      ),
+            child: categories.isEmpty
+                ? const Center(
+                    child: Text('No Categories Added'),
+                  )
+                : GridView.builder(
+                    itemCount: categories.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1,
                     ),
-                    onTap: () => viewWallpapersCaltegoryPage(context, index),
+                    itemBuilder: (context, index) {
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkResponse(
+                          child: Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              image: DecorationImage(
+                                image: CachedNetworkImageProvider(
+                                  categoryImages[index],
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              categories[index].toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.combine(
+                                  [
+                                    TextDecoration.underline,
+                                    TextDecoration.overline,
+                                  ],
+                                ),
+                                decorationStyle: TextDecorationStyle.double,
+                              ),
+                            ),
+                          ),
+                          onTap: () =>
+                              viewWallpapersCaltegoryPage(context, index),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           )
         ],
       ),

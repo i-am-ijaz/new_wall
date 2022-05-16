@@ -1,11 +1,19 @@
+import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+
+import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
+import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 import 'package:new_wall/utils/utils.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // ignore: must_be_immutable
 class ViewWallpaper extends ConsumerStatefulWidget {
@@ -24,6 +32,7 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
   File? file;
 
   late PageController pageController;
+  double fileDownloadProgress = 0.0;
 
   @override
   void initState() {
@@ -40,12 +49,9 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    final provider = ref.watch(favProvider);
+    var fav = provider.isFav(widget.wallpapersList[widget.initialPage]);
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-      ),
-      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           PageView.builder(
@@ -75,6 +81,89 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
               );
             },
           ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: kToolbarHeight,
+                color: Colors.transparent,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade100,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade100,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: fav
+                                ? const Icon(Icons.favorite)
+                                : const Icon(Icons.favorite_border),
+                            onPressed: () {
+                              var wallpaper =
+                                  widget.wallpapersList[widget.initialPage];
+                              fav
+                                  ? provider.removeFromFav(wallpaper)
+                                  : provider.addToFav(wallpaper);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (fileDownloadProgress != 0.0)
+            Align(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    value: fileDownloadProgress,
+                    backgroundColor: Colors.white,
+                    color: Colors.white,
+                    strokeWidth: 5,
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.black),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Downloading... \n ${fileDownloadProgress.toInt().toString()}%',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Align(
             alignment: Alignment.bottomCenter,
             child: ClipRRect(
@@ -94,26 +183,25 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
                             widget.wallpapersList[widget.initialPage].url;
 
                         file = await downloadWallpaper(url);
-                        if (file != null) {
-                          SnackBar(
-                            content: const Text(
-                              'Wallpaper downloaded successfully',
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
-                            ),
-                            action: SnackBarAction(
-                              label: 'Open',
-                              onPressed: () async {
-                                await openFile(
-                                  file: file!,
-                                );
-                              },
-                            ),
-                          );
 
-                          // ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        }
+                        final snackBar = SnackBar(
+                          content: const Text(
+                            'Wallpaper downloaded successfully',
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          action: SnackBarAction(
+                            label: 'Open',
+                            onPressed: () async {
+                              await openFile(
+                                file: file!,
+                              );
+                            },
+                          ),
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       },
                       icon: const Icon(
                         Icons.download,
@@ -142,5 +230,69 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
         ],
       ),
     );
+  }
+
+  Future<File> downloadWallpaper(String url) async {
+    var status = await Permission.storage.request();
+
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    String fileName = getFileName(url);
+    File file = File('$dir/$fileName');
+
+    if (status.isGranted) {
+      var httpClient = http.Client();
+      var request = http.Request('GET', Uri.parse(url));
+      var response = httpClient.send(request);
+
+      List<List<int>> chunks = [];
+      int downloaded = 0;
+
+      response.asStream().listen((http.StreamedResponse r) {
+        r.stream.listen((List<int> chunk) {
+          setState(() {
+            fileDownloadProgress = downloaded / r.contentLength! * 100;
+          });
+          chunks.add(chunk);
+          downloaded += chunk.length;
+        }, onDone: () async {
+          setState(() {
+            fileDownloadProgress = downloaded / r.contentLength! * 100;
+          });
+
+          final Uint8List bytes = Uint8List(r.contentLength!);
+          int offset = 0;
+          for (List<int> chunk in chunks) {
+            bytes.setRange(offset, offset + chunk.length, chunk);
+            offset += chunk.length;
+          }
+          await file.writeAsBytes(bytes);
+
+          await saveImageToGallery(file);
+
+          return;
+        });
+      });
+    }
+    return file;
+  }
+
+  Future<File> saveImageToGallery(File file) async {
+    try {
+      final isSaved = await GallerySaver.saveImage(
+        file.path,
+        albumName: 'New Wall',
+      );
+      log(isSaved.toString());
+    } catch (e) {
+      log(e.toString());
+    }
+    return file;
+  }
+
+  String getFileName(String url) {
+    RegExp regExp = RegExp(r'.+(\/|%2F)(.+)\?.+');
+    var matches = regExp.allMatches(url);
+    var match = matches.elementAt(0);
+    return Uri.decodeFull(match.group(2)!);
   }
 }

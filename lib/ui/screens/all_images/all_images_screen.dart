@@ -35,30 +35,35 @@ class AllImagesScreen extends ConsumerWidget {
             expandedHeight: 180,
           ),
           SliverToBoxAdapter(
-            child: GridView.builder(
-              itemCount: wallpaperList.length,
-              primary: false,
-              shrinkWrap: true,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 5 / 8,
-              ),
-              itemBuilder: (context, index) {
-                var wallpaper = wallpaperList[index];
-                final isFav =
-                    ref.watch(favProvider).isFav(wallpaperList[index]);
+            child: wallpaperList.isEmpty
+                ? const Center(
+                    child: Text('No trending images found'),
+                  )
+                : GridView.builder(
+                    itemCount: wallpaperList.length,
+                    primary: false,
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 5 / 8,
+                    ),
+                    itemBuilder: (context, index) {
+                      var wallpaper = wallpaperList[index];
+                      final isFav =
+                          ref.watch(favProvider).isFav(wallpaperList[index]);
 
-                return WallpaperWidget(
-                  wallpaper: wallpaper,
-                  isFav: isFav,
-                  wallpaperList: wallpaperList,
-                  index: index,
-                );
-              },
-            ),
+                      return WallpaperWidget(
+                        wallpaper: wallpaper,
+                        isFav: isFav,
+                        wallpaperList: wallpaperList,
+                        index: index,
+                      );
+                    },
+                  ),
           )
         ],
       ),
