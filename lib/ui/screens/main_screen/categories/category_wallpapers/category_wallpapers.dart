@@ -38,6 +38,7 @@ class CategoryWallpapers extends StatelessWidget {
               crossAxisCount: 2,
               childAspectRatio: 5 / 7,
             ),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             itemCount: categoryWallpapers.length,
             itemBuilder: (context, index) {
               final wall = categoryWallpapers.elementAt(index);

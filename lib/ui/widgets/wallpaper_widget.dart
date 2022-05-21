@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 
-import 'view_wallaper.dart';
+import '../screens/view_wallpaper/view_wallaper.dart';
 
 class WallpaperWidget extends ConsumerWidget {
   const WallpaperWidget({
@@ -28,7 +28,7 @@ class WallpaperWidget extends ConsumerWidget {
         child: Hero(
           tag: wallpaper.url,
           child: Stack(
-            fit: StackFit.expand,
+            alignment: Alignment.bottomRight,
             children: [
               Card(
                 margin: EdgeInsets.zero,
@@ -54,25 +54,23 @@ class WallpaperWidget extends ConsumerWidget {
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Material(
-                  elevation: 0,
-                  color: Colors.transparent,
-                  child: IconButton(
-                    onPressed: () {
-                      if (isFav) {
-                        ref.read(favProvider.notifier).removeFromFav(wallpaper);
-                      } else {
-                        ref.read(favProvider.notifier).addToFav(wallpaper);
-                      }
-                    },
-                    icon: isFav
-                        ? const Icon(Icons.favorite)
-                        : const Icon(Icons.favorite_border),
-                    color: Colors.white,
-                  ),
+              Material(
+                color: Colors.transparent,
+                type: MaterialType.circle,
+                surfaceTintColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                child: IconButton(
+                  onPressed: () {
+                    if (isFav) {
+                      ref.read(favProvider.notifier).removeFromFav(wallpaper);
+                    } else {
+                      ref.read(favProvider.notifier).addToFav(wallpaper);
+                    }
+                  },
+                  icon: isFav
+                      ? const Icon(Icons.favorite)
+                      : const Icon(Icons.favorite_border),
+                  color: Colors.white,
                 ),
               ),
             ],

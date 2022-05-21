@@ -58,6 +58,7 @@ class FavoritiesScreen extends ConsumerWidget {
                     itemCount: favWalls.length,
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,

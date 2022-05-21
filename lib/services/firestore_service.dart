@@ -22,6 +22,19 @@ class FirestoreService {
           },
         ).toList(),
       );
+
+  static Future<QuerySnapshot<Map<String,dynamic>>> getWallapers(
+    int limit, {
+    DocumentSnapshot? startAfter,
+  }) async {
+    final wallsRef = _walls.limit(limit);
+
+    if (startAfter == null) {
+      return wallsRef.get();
+    } else {
+      return wallsRef.startAfterDocument(startAfter).get();
+    }
+  }
 }
 
 class FirestorePath {

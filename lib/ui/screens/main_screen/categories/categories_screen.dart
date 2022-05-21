@@ -14,7 +14,7 @@ class CategoryScreen extends StatefulWidget {
 
   @override
   State<CategoryScreen> createState() => _CategoryScreenState();
-}  
+}
 
 class _CategoryScreenState extends State<CategoryScreen> {
   List<String> categories = [];
@@ -63,6 +63,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     itemCount: categories.length,
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 1,

@@ -10,6 +10,7 @@ class AppTheme {
       elevation: 0,
       foregroundColor: Colors.black,
     ),
+    useMaterial3: true,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all(

@@ -7,7 +7,7 @@ import 'package:new_wall/ui/widgets/constants.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'firebase_options.dart';
-import 'ui/screens/main_screen.dart';
+import 'ui/screens/main_screen/main_screen.dart';
 
 Future<void> main() async {
   await initApp();
@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'New Wall',
       theme: AppTheme.lightTheme,
+      
       home: const MainScreen(),
     );
   }

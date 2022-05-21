@@ -5,9 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:new_wall/services/firestore_service.dart';
 
-import 'all_images/all_images_screen.dart';
 import 'categories/categories_screen.dart';
 import 'favorities/favorities.dart';
+import 'trendings/trending_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -67,7 +67,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget _getPages(int index, List<Wallpaper> wallpaperList) {
     switch (index) {
       case 0:
-        return AllImagesScreen(wallpaperList: wallpaperList);
+        return const TrendingScreen();
       case 1:
         return CategoryScreen(wallpaperList: wallpaperList);
       case 2:
