@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:new_wall/ui/widgets/wallpaper_widget.dart';
+import 'package:new_wall/ui/shared/wallpaper_widget.dart';
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 import 'package:new_wall/services/firestore_service.dart';
 
 class CategoryWallpapers extends StatelessWidget {
-  const CategoryWallpapers({Key? key, required this.category})
-      : super(key: key);
+  const CategoryWallpapers({
+    Key? key,
+    required this.category,
+  }) : super(key: key);
   final String category;
 
   @override
@@ -27,9 +30,9 @@ class CategoryWallpapers extends StatelessWidget {
               child: CircularProgressIndicator(),
             );
           }
-          final categoryWallpapers = snapshot.data!
+          final categoryWallpapers = snapshot.requireData
               .where(
-                (element) => element.tag == category,
+                (e) => e.tag == category,
               )
               .toList();
 
@@ -44,17 +47,15 @@ class CategoryWallpapers extends StatelessWidget {
               final wall = categoryWallpapers.elementAt(index);
               return Consumer(
                 builder: (context, WidgetRef ref, _) {
-                  final isFav = ref
+                  final isFavWall = ref
                       .watch(
                         favProvider,
                       )
-                      .isFav(
-                        categoryWallpapers[index],
-                      );
+                      .isFav(categoryWallpapers[index]);
 
                   return WallpaperWidget(
                     wallpaper: wall,
-                    isFav: isFav,
+                    isFav: isFavWall,
                     wallpaperList: categoryWallpapers,
                     index: index,
                   );

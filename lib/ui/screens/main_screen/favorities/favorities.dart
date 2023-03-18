@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:new_wall/ui/widgets/wallpaper_widget.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
+import 'package:new_wall/ui/shared/custom_app_bar.dart';
+import 'package:new_wall/ui/shared/wallpaper_widget.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 
 class FavoritiesScreen extends ConsumerWidget {
   const FavoritiesScreen({
     Key? key,
-    required this.wallpaperList,
+    required this.wallpapersList,
   }) : super(key: key);
-  final List<Wallpaper> wallpaperList;
+  final List<Wallpaper> wallpapersList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +20,7 @@ class FavoritiesScreen extends ConsumerWidget {
 
     final isFavProvider = ref.watch(favProvider);
 
-    for (var wall in wallpaperList) {
+    for (final wall in wallpapersList) {
       if (isFavProvider.isFav(wall)) {
         favWalls.add(wall);
       }
@@ -28,22 +29,7 @@ class FavoritiesScreen extends ConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            backgroundColor: Colors.green.shade100,
-            flexibleSpace: const FlexibleSpaceBar(
-              title: Text(
-                'Favorities',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            pinned: true,
-            floating: true,
-            expandedHeight: 180,
-          ),
+          const CustomSliverAppBar(title: 'Favorities'),
           SliverToBoxAdapter(
             child: favWalls.isEmpty
                 ? SingleChildScrollView(

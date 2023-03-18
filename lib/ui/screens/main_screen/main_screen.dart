@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timezone/data/latest.dart' as tz;
+
 import 'package:new_wall/services/firestore_service.dart';
 
 import 'categories/categories_screen.dart';
@@ -19,39 +20,35 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   final PageController _pageController = PageController(initialPage: 1);
 
-  int currentPage = 1;
+  int _currentPageIndex = 1;
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> wallpapersStream() =>
-      FirebaseFirestore.instance.collection('wallpapers').snapshots();
+  @override
+  void initState() {
+    super.initState();
+    tz.initializeTimeZones();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: const CustomAppBar(),
       body: StreamBuilder<List<Wallpaper>>(
         stream: FirestoreService.wallpapers(),
         builder: (
           BuildContext context,
-          snapshot,
+          AsyncSnapshot<List<Wallpaper>> wallpapersSnapshot,
         ) {
-          if (snapshot.hasData) {
-            List<Wallpaper> wallpapers = snapshot.data!.toList();
+          if (wallpapersSnapshot.hasData) {
+            List<Wallpaper> wallpapers = wallpapersSnapshot.requireData;
 
             return PageView.builder(
               controller: _pageController,
               onPageChanged: (int page) {
-                setState(() => currentPage = page);
+                setState(() => _currentPageIndex = page);
               },
               itemCount: 3,
               itemBuilder: (BuildContext context, int index) {
-                return _getPages(index, wallpapers);
+                return _currentPage(index, wallpapers);
               },
-            );
-          }
-
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text('Error'),
             );
           }
 
@@ -60,24 +57,41 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           );
         },
       ),
-      bottomNavigationBar: navigationBar(),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentPage: _currentPageIndex,
+        pageController: _pageController,
+      ),
     );
   }
 
-  Widget _getPages(int index, List<Wallpaper> wallpaperList) {
+  Widget _currentPage(int index, List<Wallpaper> wallpaperList) {
     switch (index) {
       case 0:
         return const TrendingScreen();
       case 1:
         return CategoryScreen(wallpaperList: wallpaperList);
       case 2:
-        return FavoritiesScreen(wallpaperList: wallpaperList);
+        return FavoritiesScreen(wallpapersList: wallpaperList);
       default:
         return const CircularProgressIndicator();
     }
   }
+}
 
-  Widget navigationBar() {
+class AppBottomNavigationBar extends StatelessWidget {
+  const AppBottomNavigationBar({
+    Key? key,
+    required int currentPage,
+    required PageController pageController,
+  })  : _currentPage = currentPage,
+        _pageController = pageController,
+        super(key: key);
+
+  final int _currentPage;
+  final PageController _pageController;
+
+  @override
+  Widget build(BuildContext context) {
     return NavigationBarTheme(
       data: NavigationBarThemeData(
         indicatorColor: Colors.green.shade100,
@@ -88,13 +102,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ),
       ),
       child: NavigationBar(
-        selectedIndex: currentPage,
+        selectedIndex: _currentPage,
         backgroundColor: Colors.white,
-        animationDuration: const Duration(seconds: 2),
+        animationDuration: const Duration(seconds: 1),
         onDestinationSelected: (int i) {
           _pageController.animateToPage(
             i,
-            duration: const Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.fastOutSlowIn,
           );
         },

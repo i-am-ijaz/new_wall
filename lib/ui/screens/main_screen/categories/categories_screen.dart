@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
+import 'package:new_wall/ui/shared/custom_app_bar.dart';
+
 import 'category_wallpapers/category_wallpapers.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -17,8 +19,8 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  List<String> categories = [];
-  List<String> categoryImages = [];
+  final List<String> _categories = [];
+  final List<String> _categoryImages = [];
 
   @override
   void initState() {
@@ -26,9 +28,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
     for (var wallpaper in widget.wallpaperList) {
       var category = wallpaper.tag;
 
-      if (!categories.contains(category)) {
-        categories.add(category);
-        categoryImages.add(wallpaper.url);
+      if (!_categories.contains(category)) {
+        _categories.add(category);
+        _categoryImages.add(wallpaper.url);
       }
     }
   }
@@ -38,29 +40,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            backgroundColor: Colors.green.shade100,
-            flexibleSpace: const FlexibleSpaceBar(
-              title: Text(
-                'Categories',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            pinned: true,
-            floating: true,
-            expandedHeight: 180,
-          ),
+          const CustomSliverAppBar(title: 'Categories'),
           SliverToBoxAdapter(
-            child: categories.isEmpty
+            child: _categories.isEmpty
                 ? const Center(
                     child: Text('No Categories Added'),
                   )
                 : GridView.builder(
-                    itemCount: categories.length,
+                    itemCount: _categories.length,
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -78,14 +65,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               borderRadius: BorderRadius.circular(10),
                               image: DecorationImage(
                                 image: CachedNetworkImageProvider(
-                                  categoryImages[index],
+                                  _categoryImages[index],
                                 ),
                                 fit: BoxFit.cover,
                               ),
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              categories[index].toUpperCase(),
+                              _categories[index].toUpperCase(),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 30,
@@ -100,8 +87,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               ),
                             ),
                           ),
-                          onTap: () =>
-                              viewWallpapersCaltegoryPage(context, index),
+                          onTap: () {
+                            _viewWallpapersCaltegoryPage(context, index);
+                          },
                         ),
                       );
                     },
@@ -112,12 +100,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  void viewWallpapersCaltegoryPage(BuildContext context, int index) {
+  void _viewWallpapersCaltegoryPage(BuildContext context, int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CategoryWallpapers(
-          category: categories[index],
+          category: _categories[index],
         ),
       ),
     );

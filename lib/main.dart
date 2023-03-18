@@ -1,10 +1,14 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 import 'package:hive/hive.dart';
-import 'package:new_wall/ui/theme/theme.dart';
-import 'package:new_wall/ui/widgets/constants.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:new_wall/ui/theme/theme.dart';
+import 'package:new_wall/services/notification_service.dart';
+import 'package:new_wall/utils/constants.dart';
 
 import 'firebase_options.dart';
 import 'ui/screens/main_screen/main_screen.dart';
@@ -17,10 +21,14 @@ Future<void> main() async {
       child: MyApp(),
     ),
   );
+
+  FlutterNativeSplash.remove();
 }
 
 Future<void> initApp() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await NotificationService().initNotification();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -46,7 +54,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'New Wall',
       theme: AppTheme.lightTheme,
-      
       home: const MainScreen(),
     );
   }

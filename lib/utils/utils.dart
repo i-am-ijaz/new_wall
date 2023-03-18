@@ -1,10 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+
+import 'package:open_file/open_file.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
-import 'package:open_file/open_file.dart';
-import 'package:permission_handler/permission_handler.dart';
+
+import 'package:new_wall/ui/screens/view_wallpaper/view_wallaper.dart';
 
 Future<void> setWallpaperBottomSheet(BuildContext context, String url) async {
   await showModalBottomSheet(
@@ -22,19 +24,24 @@ Future<void> setWallpaperBottomSheet(BuildContext context, String url) async {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 140.0),
               child: Divider(
-                thickness: 5,
+                thickness: 2,
                 color: Colors.black,
               ),
             ),
-            const Text(
-              'Set as',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+            const Padding(
+              padding: EdgeInsets.only(left: 8.0),
+              child: Text(
+                'Apply',
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -43,29 +50,53 @@ Future<void> setWallpaperBottomSheet(BuildContext context, String url) async {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton(
-                  child: const Text('Home Screen'),
+                  child: const Text('Home Screen Wallpaper'),
                   onPressed: () async {
-                    int location = WallpaperManager.HOME_SCREEN;
-                    var file = await DefaultCacheManager().getSingleFile(url);
-
-                    await WallpaperManager.setWallpaperFromFile(
-                      file.path,
-                      location,
+                    showDialog(
+                      context: context,
+                      builder: (_) => const ProgressDialogContent(),
                     );
+
+                    int loc = WallpaperManager.HOME_SCREEN;
+                    final file = await DefaultCacheManager().getSingleFile(url);
+                    final path = file.path;
+
+                    final isSet = await WallpaperManager.setWallpaperFromFile(
+                      path,
+                      loc,
+                    );
+
+                    if (isSet) {
+                      showMessage("Wallpaper has been set");
+                    }
+
+                    Navigator.of(context, rootNavigator: true).pop();
 
                     Navigator.pop(context);
                   },
                 ),
                 ElevatedButton(
-                  child: const Text('Lock Screen'),
+                  child: const Text('Lock Screen Wallpaper'),
                   onPressed: () async {
-                    int location = WallpaperManager.LOCK_SCREEN;
-                    var file = await DefaultCacheManager().getSingleFile(url);
-
-                    await WallpaperManager.setWallpaperFromFile(
-                      file.path,
-                      location,
+                    showDialog(
+                      context: context,
+                      builder: (_) => const ProgressDialogContent(),
                     );
+
+                    int loc = WallpaperManager.LOCK_SCREEN;
+                    final file = await DefaultCacheManager().getSingleFile(url);
+                    final path = file.path;
+
+                    final isSet = await WallpaperManager.setWallpaperFromFile(
+                      path,
+                      loc,
+                    );
+
+                    if (isSet) {
+                      showMessage("Wallpaper has been set");
+                    }
+
+                    Navigator.of(context, rootNavigator: true).pop();
 
                     Navigator.pop(context);
                   },
@@ -73,13 +104,25 @@ Future<void> setWallpaperBottomSheet(BuildContext context, String url) async {
                 ElevatedButton(
                   child: const Text('Both'),
                   onPressed: () async {
-                    int location = WallpaperManager.HOME_SCREEN;
-                    var file = await DefaultCacheManager().getSingleFile(url);
-
-                    await WallpaperManager.setWallpaperFromFile(
-                      file.path,
-                      location,
+                    showDialog(
+                      context: context,
+                      builder: (_) => const ProgressDialogContent(),
                     );
+
+                    int loc = WallpaperManager.BOTH_SCREEN;
+                    final file = await DefaultCacheManager().getSingleFile(url);
+                    final path = file.path;
+
+                    final isSet = await WallpaperManager.setWallpaperFromFile(
+                      path,
+                      loc,
+                    );
+
+                    if (isSet) {
+                      showMessage("Wallpaper has been set");
+                    }
+
+                    Navigator.of(context, rootNavigator: true).pop();
 
                     Navigator.pop(context);
                   },
@@ -93,10 +136,17 @@ Future<void> setWallpaperBottomSheet(BuildContext context, String url) async {
   );
 }
 
+void showMessage(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    toastLength: Toast.LENGTH_LONG,
+  );
+}
+
 Future<void> openFile({
-  required File file,
+  required String path,
 }) async {
-  await OpenFile.open(file.path);
+  await OpenFile.open(path);
 }
 
 // ignore: unused_element

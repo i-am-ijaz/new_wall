@@ -9,20 +9,23 @@ environment:
   sdk: ">=2.16.0 <3.0.0"
 
 dependencies:
-  cached_network_image: ^3.2.0
-  cloud_firestore: ^3.1.8
-  cupertino_icons: ^1.0.2
+  cached_network_image: ^3.2.3
+  cloud_firestore: ^4.4.5
+  cupertino_icons: ^1.0.5
   dio: ^4.0.4
-  firebase_auth: ^3.3.5
-  firebase_core: ^1.11.0
-  firebase_storage: ^10.2.7
+  firebase_auth: ^4.3.0
+  firebase_core: ^2.8.0
+  firebase_storage: ^11.0.16
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
-  flutter_riverpod: ^1.0.3
+  flutter_local_notifications: ^8.2.0
+  flutter_native_splash: ^2.2.16
+  flutter_riverpod: ^2.3.2
   flutter_staggered_grid_view: ^0.6.1
   flutter_wallpaper_manager: ^0.0.3
   flutterfire_ui: ^0.4.1
+  fluttertoast: ^8.2.1
   gallery_saver: ^2.3.2
   getwidget: ^2.0.5
   google_fonts: ^2.3.2
@@ -31,19 +34,24 @@ dependencies:
   json_annotation: ^4.4.0
   open_file: ^3.2.1
   path_provider: ^2.0.9
-  permission_handler: ^9.2.0
-  photo_view: ^0.13.0
+  permission_handler: ^10.2.0
+  photo_view: ^0.14.0
   rename: ^2.0.1
+  riverpod_annotation: ^2.0.2
+  shimmer: ^2.0.0
   wallpaper: ^1.1.0
 
 dev_dependencies:
   build_runner: ^2.1.7
+  custom_lint: ^0.3.2
   flutter_launcher_icons: ^0.9.2
 
   flutter_lints: ^1.0.0
   flutter_test:
     sdk: flutter
   json_serializable: ^6.1.5
+  riverpod_generator: ^2.1.4
+  riverpod_lint: ^1.1.6
 
 flutter:
   uses-material-design: true

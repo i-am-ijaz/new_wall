@@ -3,19 +3,20 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:getwidget/getwidget.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:getwidget/getwidget.dart';
+import 'package:new_wall/services/notification_service.dart';
+import 'package:new_wall/utils/utils.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 import 'package:new_wall/ui/screens/view_wallpaper/components/view_wall_app_bar.dart';
-import 'package:new_wall/utils/utils.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 // ignore: must_be_immutable
 class ViewWallpaper extends ConsumerStatefulWidget {
@@ -26,18 +27,44 @@ class ViewWallpaper extends ConsumerStatefulWidget {
   }) : super(key: key);
   final List<Wallpaper> wallpapersList;
   int initialPage;
+
   @override
   ConsumerState createState() => _ViewWallpaperState();
 }
 
-class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
+class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
+    with TickerProviderStateMixin {
   late PageController _pageController;
   double _fileDownloadProgress = 0.0;
+
+  bool _isDownloading = false;
+  late AnimationController controller;
+  late Animation<Offset> offset;
+  late AnimationController controller1;
+  late Animation<Offset> offset1;
 
   @override
   void initState() {
     super.initState();
+    controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
+
+    offset = Tween<Offset>(
+      begin: const Offset(0.0, 1.0),
+      end: Offset.zero,
+    ).animate(controller);
+
+    controller1 =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
+
+    offset1 = Tween<Offset>(
+      begin: const Offset(1, 0),
+      end: Offset.zero,
+    ).animate(controller);
+
     _pageController = PageController(initialPage: widget.initialPage);
+    controller.forward();
+    controller1.forward();
   }
 
   @override
@@ -81,25 +108,28 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
               );
             },
           ),
-          ViewWallAppBar(
-            isFav: fav,
-            setFavorities: () => addRemoveToFavorities(fav, provider),
+          SlideTransition(
+            position: offset1,
+            child: ViewWallAppBar(
+              isFav: fav,
+              setFavorities: () => addRemoveToFavorities(fav, provider),
+            ),
           ),
           if (_fileDownloadProgress > 0)
             SafeArea(
               child: Align(
                 alignment: Alignment.center,
                 child: SizedBox(
-                  height: 80,
-                  child: GFProgressBar(
-                    percentage: _fileDownloadProgress,
-                    width: 100,
-                    radius: 80,
-                    lineHeight: 20,
-                    type: GFProgressType.circular,
-                    backgroundColor: Colors.black26,
-                    progressBarColor: GFColors.DANGER,
-                    child: Center(
+                  height: size.height * 0.15,
+                  width: size.width * 0.4,
+                  child: Card(
+                    child: GFProgressBar(
+                      percentage: _fileDownloadProgress,
+                      radius: 80,
+                      lineHeight: 20,
+                      type: GFProgressType.circular,
+                      backgroundColor: Colors.black26,
+                      progressBarColor: GFColors.SUCCESS,
                       child: Text(
                         '${(_fileDownloadProgress * 100).ceil()}%',
                       ),
@@ -112,40 +142,49 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
             padding: const EdgeInsets.all(8.0),
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: Container(
-                  height: size.height * 0.1,
-                  width: size.width * 0.4,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  color: Colors.green.shade100,
-                  alignment: Alignment.center,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () async {
-                          String url =
-                              widget.wallpapersList[widget.initialPage].url;
+              child: SlideTransition(
+                position: offset,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: Container(
+                    height: size.height * 0.1,
+                    width: size.width * 0.4,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    color: Colors.green.shade100,
+                    alignment: Alignment.center,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () async {
+                            if (_fileDownloadProgress > 0) {
+                              return;
+                            }
+                            if (_isDownloading) {
+                              return;
+                            }
 
-                          final file = await downloadWallpaper(url);
-                          await showFileOpenSnackbar(file, context);
-                        },
-                        icon: const Icon(
-                          Icons.download,
-                          size: 30,
+                            String url =
+                                widget.wallpapersList[widget.initialPage].url;
+
+                            await downloadWallpaper(url);
+                          },
+                          icon: const Icon(
+                            Icons.download,
+                            size: 30,
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.format_paint,
-                          size: 30,
+                        IconButton(
+                          icon: const Icon(
+                            Icons.format_paint,
+                            size: 30,
+                          ),
+                          onPressed: () async => await setWallpaperBottomSheet(
+                            context,
+                            widget.wallpapersList[widget.initialPage].url,
+                          ),
                         ),
-                        onPressed: () async => await setWallpaperBottomSheet(
-                          context,
-                          widget.wallpapersList[widget.initialPage].url,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -169,7 +208,7 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
           label: 'Open',
           onPressed: () async {
             await openFile(
-              file: file,
+              path: file.path,
             );
           },
         ),
@@ -185,7 +224,11 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
     fav ? provider.removeFromFav(wallpaper) : provider.addToFav(wallpaper);
   }
 
-  Future<File> downloadWallpaper(String url) async {
+  Future<File?> downloadWallpaper(String url) async {
+    setState(() {
+      _isDownloading = true;
+    });
+
     var status = await Permission.storage.request();
 
     String dir = (await getApplicationDocumentsDirectory()).path;
@@ -220,6 +263,12 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
           }
           await file.writeAsBytes(bytes);
 
+          await NotificationService().showNotification(
+            id: downloaded,
+            title: 'New Wall',
+            body: 'Wallpaper downloaded successfully! Tap to open',
+            payload: file.path,
+          );
           await saveImageToGallery(file);
 
           setState(() {
@@ -229,20 +278,23 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
         });
       });
     }
+
+    setState(() {
+      _isDownloading = false;
+    });
+
     return file;
   }
 
-  Future<File> saveImageToGallery(File file) async {
+  Future<void> saveImageToGallery(File file) async {
     try {
-      final isSaved = await GallerySaver.saveImage(
+      await GallerySaver.saveImage(
         file.path,
         albumName: 'New Wall',
       );
-      log(isSaved.toString());
     } catch (e) {
       log(e.toString());
     }
-    return file;
   }
 
   String getFileName(String url) {
@@ -250,5 +302,33 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper> {
     var matches = regExp.allMatches(url);
     var match = matches.elementAt(0);
     return Uri.decodeFull(match.group(2)!);
+  }
+}
+
+class ProgressDialogContent extends StatelessWidget {
+  const ProgressDialogContent({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: const SizedBox(
+          height: 30,
+          width: 30,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(
+              GFColors.SUCCESS,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

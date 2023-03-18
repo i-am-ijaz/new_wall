@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
-import 'package:new_wall/ui/widgets/constants.dart';
+import 'package:new_wall/utils/constants.dart';
 
 final favProvider = ChangeNotifierProvider<FavWallpaperProvider>((ref) {
   return FavWallpaperProvider();
