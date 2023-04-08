@@ -31,6 +31,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          "New Wall",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
       body: StreamBuilder<List<Wallpaper>>(
         stream: FirestoreService.wallpapers(),
         builder: (
@@ -92,44 +101,35 @@ class AppBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationBarTheme(
-      data: NavigationBarThemeData(
-        indicatorColor: Colors.green.shade100,
-        labelTextStyle: MaterialStateProperty.all(
-          const TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
+    return BottomNavigationBar(
+      currentIndex: _currentPage,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      backgroundColor: Colors.white,
+      onTap: (i) {
+        _pageController.animateToPage(
+          i,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.fastOutSlowIn,
+        );
+      },
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.image_outlined),
+          activeIcon: Icon(Icons.image),
+          label: '',
         ),
-      ),
-      child: NavigationBar(
-        selectedIndex: _currentPage,
-        backgroundColor: Colors.white,
-        animationDuration: const Duration(seconds: 1),
-        onDestinationSelected: (int i) {
-          _pageController.animateToPage(
-            i,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.fastOutSlowIn,
-          );
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.image_outlined),
-            selectedIcon: Icon(Icons.image),
-            label: 'Trending',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Categories',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.favorite_outline),
-            selectedIcon: Icon(Icons.favorite),
-            label: 'Favorities',
-          ),
-        ],
-      ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard_outlined),
+          activeIcon: Icon(Icons.dashboard),
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.favorite_outline),
+          activeIcon: Icon(Icons.favorite),
+          label: '',
+        ),
+      ],
     );
   }
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 import 'package:new_wall/providers/wallapers_provider.dart';
-import 'package:new_wall/ui/shared/custom_app_bar.dart';
 import 'package:new_wall/ui/shared/wallpaper_widget.dart';
 
 class TrendingScreen extends ConsumerStatefulWidget {
@@ -38,59 +38,54 @@ class _TrendingScreenState extends ConsumerState<TrendingScreen> {
     final wallpapers = wallpapersProvider.wallPapers();
 
     return Scaffold(
-      body: CustomScrollView(
+      body: SingleChildScrollView(
         controller: _scrollController,
-        slivers: [
-          const CustomSliverAppBar(title: 'Trending'),
-          SliverToBoxAdapter(
-            child: _isWallsListEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 100),
-                      child: Column(
-                        children: const [
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        GridView.builder(
-                          itemCount: wallpapers.length,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 5 / 7,
-                          ),
-                          itemBuilder: (context, index) {
-                            final wallpaper = wallpapers[index];
-                            final isFav =
-                                ref.watch(favProvider).isFav(wallpapers[index]);
-
-                            return AspectRatio(
-                              aspectRatio: index.isOdd ? 1 : 1.5,
-                              child: WallpaperWidget(
-                                wallpaper: wallpaper,
-                                isFav: isFav,
-                                wallpaperList: wallpapers,
-                                index: index,
-                              ),
-                            );
-                          },
-                        ),
-                        if (wallpapersProvider.hasNext)
-                          const CircularProgressIndicator(),
-                      ],
-                    ),
+        // slivers: [
+        // const CustomSliverAppBar(title: 'Trending'),
+        child: _isWallsListEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Column(
+                    children: const [
+                      CircularProgressIndicator(),
+                    ],
                   ),
-          )
-        ],
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    StaggeredGrid.count(
+                      crossAxisCount: 4,
+                      children: List.generate(
+                        wallpapers.length,
+                        (index) {
+                          final isFav =
+                              ref.watch(favProvider).isFav(wallpapers[index]);
+
+                          return StaggeredGridTile.count(
+                            crossAxisCellCount: 2,
+                            mainAxisCellCount: index.isEven ? 2.5 : 3,
+                            child: WallpaperWidget(
+                              wallpaper: wallpapers[index],
+                              isFav: isFav,
+                              wallpaperList: wallpapers,
+                              index: index,
+                            ),
+                          );
+                        },
+                      ),
+                      axisDirection: AxisDirection.down,
+                      mainAxisSpacing: 4.0,
+                      crossAxisSpacing: 4.0,
+                    ),
+                    if (wallpapersProvider.hasNext)
+                      const CircularProgressIndicator(),
+                  ],
+                ),
+              ),
       ),
     );
   }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
-import 'package:new_wall/ui/shared/custom_app_bar.dart';
 import 'package:new_wall/ui/shared/wallpaper_widget.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 
@@ -27,42 +26,36 @@ class FavoritiesScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          const CustomSliverAppBar(title: 'Favorities'),
-          SliverToBoxAdapter(
-            child: favWalls.isEmpty
-                ? SingleChildScrollView(
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.8,
-                      child: const Center(
-                        child: Text('You have no favorites yet'),
-                      ),
-                    ),
-                  )
-                : GridView.builder(
-                    itemCount: favWalls.length,
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 5 / 7,
-                    ),
-                    itemBuilder: (context, index) {
-                      var favWall = favWalls[index];
-
-                      return WallpaperWidget(
-                        wallpaper: favWall,
-                        isFav: isFavProvider.isFav(favWall),
-                        wallpaperList: favWalls,
-                        index: index,
-                      );
-                    },
+      body: SingleChildScrollView(
+        child: favWalls.isEmpty
+            ? SingleChildScrollView(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  child: const Center(
+                    child: Text('You have no favorites yet'),
                   ),
-          )
-        ],
+                ),
+              )
+            : GridView.builder(
+                itemCount: favWalls.length,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 5 / 7,
+                ),
+                itemBuilder: (context, index) {
+                  var favWall = favWalls[index];
+
+                  return WallpaperWidget(
+                    wallpaper: favWall,
+                    isFav: isFavProvider.isFav(favWall),
+                    wallpaperList: favWalls,
+                    index: index,
+                  );
+                },
+              ),
       ),
     );
   }

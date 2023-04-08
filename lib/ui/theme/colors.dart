@@ -1,3 +1,3 @@
 import 'package:flutter/material.dart';
 
-Color primary = Colors.green.shade100;
+const primary = Color(0xFFf6444e);

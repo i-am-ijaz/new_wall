@@ -22,114 +22,120 @@ Future<void> setWallpaperBottomSheet(BuildContext context, String url) async {
         padding: const EdgeInsets.symmetric(
           horizontal: 16,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 140.0),
-              child: Divider(
-                thickness: 2,
-                color: Colors.black,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Text(
-                'Apply',
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.3,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 140.0),
+                child: Divider(
+                  thickness: 2,
+                  color: Colors.black,
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  child: const Text('Home Screen Wallpaper'),
-                  onPressed: () async {
-                    showDialog(
-                      context: context,
-                      builder: (_) => const ProgressDialogContent(),
-                    );
-
-                    int loc = WallpaperManager.HOME_SCREEN;
-                    final file = await DefaultCacheManager().getSingleFile(url);
-                    final path = file.path;
-
-                    final isSet = await WallpaperManager.setWallpaperFromFile(
-                      path,
-                      loc,
-                    );
-
-                    if (isSet) {
-                      showMessage("Wallpaper has been set");
-                    }
-
-                    Navigator.of(context, rootNavigator: true).pop();
-
-                    Navigator.pop(context);
-                  },
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Text(
+                  'Apply',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                ElevatedButton(
-                  child: const Text('Lock Screen Wallpaper'),
-                  onPressed: () async {
-                    showDialog(
-                      context: context,
-                      builder: (_) => const ProgressDialogContent(),
-                    );
+              ),
+              const SizedBox(height: 10),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    child: const Text('Home Screen'),
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const ProgressDialogContent(),
+                      );
 
-                    int loc = WallpaperManager.LOCK_SCREEN;
-                    final file = await DefaultCacheManager().getSingleFile(url);
-                    final path = file.path;
+                      int loc = WallpaperManager.HOME_SCREEN;
+                      final file =
+                          await DefaultCacheManager().getSingleFile(url);
+                      final path = file.path;
 
-                    final isSet = await WallpaperManager.setWallpaperFromFile(
-                      path,
-                      loc,
-                    );
+                      final isSet = await WallpaperManager.setWallpaperFromFile(
+                        path,
+                        loc,
+                      );
 
-                    if (isSet) {
-                      showMessage("Wallpaper has been set");
-                    }
+                      if (isSet) {
+                        showMessage("Wallpaper has been set");
+                      }
 
-                    Navigator.of(context, rootNavigator: true).pop();
+                      Navigator.of(context, rootNavigator: true).pop();
 
-                    Navigator.pop(context);
-                  },
-                ),
-                ElevatedButton(
-                  child: const Text('Both'),
-                  onPressed: () async {
-                    showDialog(
-                      context: context,
-                      builder: (_) => const ProgressDialogContent(),
-                    );
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ElevatedButton(
+                    child: const Text('Lock Screen'),
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const ProgressDialogContent(),
+                      );
 
-                    int loc = WallpaperManager.BOTH_SCREEN;
-                    final file = await DefaultCacheManager().getSingleFile(url);
-                    final path = file.path;
+                      int loc = WallpaperManager.LOCK_SCREEN;
+                      final file =
+                          await DefaultCacheManager().getSingleFile(url);
+                      final path = file.path;
 
-                    final isSet = await WallpaperManager.setWallpaperFromFile(
-                      path,
-                      loc,
-                    );
+                      final isSet = await WallpaperManager.setWallpaperFromFile(
+                        path,
+                        loc,
+                      );
 
-                    if (isSet) {
-                      showMessage("Wallpaper has been set");
-                    }
+                      if (isSet) {
+                        showMessage("Wallpaper has been set");
+                      }
 
-                    Navigator.of(context, rootNavigator: true).pop();
+                      Navigator.of(context, rootNavigator: true).pop();
 
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ],
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ElevatedButton(
+                    child: const Text('Both'),
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const ProgressDialogContent(),
+                      );
+
+                      int loc = WallpaperManager.BOTH_SCREEN;
+                      final file =
+                          await DefaultCacheManager().getSingleFile(url);
+                      final path = file.path;
+
+                      final isSet = await WallpaperManager.setWallpaperFromFile(
+                        path,
+                        loc,
+                      );
+
+                      if (isSet) {
+                        showMessage("Wallpaper has been set");
+                      }
+
+                      Navigator.of(context, rootNavigator: true).pop();
+
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       );
     },

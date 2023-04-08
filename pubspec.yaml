@@ -6,7 +6,7 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.16.0 <3.0.0"
+  sdk: ">=2.19.6 <3.0.0"
 
 dependencies:
   cached_network_image: ^3.2.3
@@ -19,10 +19,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
-  flutter_local_notifications: ^8.2.0
+  flutter_local_notifications: ^12.0.4
   flutter_native_splash: ^2.2.16
   flutter_riverpod: ^2.3.2
-  flutter_staggered_grid_view: ^0.6.1
+  flutter_staggered_grid_view: ^0.6.2
   flutter_wallpaper_manager: ^0.0.3
   flutterfire_ui: ^0.4.1
   fluttertoast: ^8.2.1
@@ -33,7 +33,7 @@ dependencies:
   http: ^0.13.4
   json_annotation: ^4.4.0
   open_file: ^3.2.1
-  path_provider: ^2.0.9
+i  path_provider: ^2.0.9
   permission_handler: ^10.2.0
   photo_view: ^0.14.0
   rename: ^2.0.1

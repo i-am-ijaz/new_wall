@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:getwidget/getwidget.dart';
 import 'package:new_wall/services/notification_service.dart';
+import 'package:new_wall/ui/theme/colors.dart';
 import 'package:new_wall/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
@@ -16,7 +17,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
-import 'package:new_wall/ui/screens/view_wallpaper/components/view_wall_app_bar.dart';
 
 // ignore: must_be_immutable
 class ViewWallpaper extends ConsumerStatefulWidget {
@@ -79,6 +79,27 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
     final provider = ref.watch(favProvider);
     var fav = provider.isFav(widget.wallpapersList[widget.initialPage]);
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        leadingWidth: 80,
+        leading: InkWell(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            decoration: const BoxDecoration(
+              color: primary,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           PageView.builder(
@@ -95,6 +116,7 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
                 child: InteractiveViewer(
                   minScale: 0.5,
                   maxScale: 2.0,
+                  scaleEnabled: true,
                   child: CachedNetworkImage(
                     imageUrl: widget.wallpapersList[index].url,
                     fit: BoxFit.cover,
@@ -107,13 +129,6 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
                 ),
               );
             },
-          ),
-          SlideTransition(
-            position: offset1,
-            child: ViewWallAppBar(
-              isFav: fav,
-              setFavorities: () => addRemoveToFavorities(fav, provider),
-            ),
           ),
           if (_fileDownloadProgress > 0)
             SafeArea(
@@ -139,53 +154,84 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
               ),
             ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 34,
+              vertical: 24,
+            ),
             child: Align(
               alignment: Alignment.bottomCenter,
               child: SlideTransition(
                 position: offset,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.0),
-                  child: Container(
-                    height: size.height * 0.1,
-                    width: size.width * 0.4,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    color: Colors.green.shade100,
-                    alignment: Alignment.center,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () async {
-                            if (_fileDownloadProgress > 0) {
-                              return;
-                            }
-                            if (_isDownloading) {
-                              return;
-                            }
-
-                            String url =
-                                widget.wallpapersList[widget.initialPage].url;
-
-                            await downloadWallpaper(url);
-                          },
-                          icon: const Icon(
-                            Icons.download,
-                            size: 30,
-                          ),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(primary),
                         ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.format_paint,
-                            size: 30,
+                        onPressed: () async {
+                          if (_fileDownloadProgress > 0) {
+                            return;
+                          }
+                          if (_isDownloading) {
+                            return;
+                          }
+
+                          String url =
+                              widget.wallpapersList[widget.initialPage].url;
+
+                          await downloadWallpaper(url);
+                        },
+                        icon: const Icon(
+                          Icons.download,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
                           ),
                           onPressed: () async => await setWallpaperBottomSheet(
                             context,
                             widget.wallpapersList[widget.initialPage].url,
                           ),
+                          child: const Text("SET AS"),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: fav
+                            ? const Icon(
+                                Icons.favorite,
+                                color: primary,
+                                size: 30,
+                              )
+                            : const Icon(
+                                Icons.favorite_border,
+                                color: primary,
+                                size: 30,
+                              ),
+                        onPressed: () async => addRemoveToFavorities(
+                          fav,
+                          provider,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -24,7 +24,7 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onSelectNotification: onSelectNotification,
+      onDidReceiveNotificationResponse: onSelectNotification,
     );
   }
 
@@ -43,7 +43,7 @@ class NotificationService {
         android: AndroidNotificationDetails(
           'main_channel',
           'main_channel',
-          'Main_Channel',
+          channelDescription: 'Main_Channel',
           importance: Importance.max,
           priority: Priority.max,
         ),
@@ -55,9 +55,9 @@ class NotificationService {
     );
   }
 
-  Future<dynamic> onSelectNotification(String? payload) async {
-    print(payload);
-    if (payload != null) await openFile(path: payload);
+  onSelectNotification(NotificationResponse res) async {
+    print(res.payload);
+    if (res.payload != null) await openFile(path: res.payload!);
   }
 
   Future<dynamic> cancelNotification() async {
