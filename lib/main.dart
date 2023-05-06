@@ -15,7 +15,7 @@ import 'firebase_options.dart';
 import 'ui/screens/main_screen/main_screen.dart';
 
 Future<void> main() async {
-  await initApp();
+  await _initApp();
 
   runApp(
     const ProviderScope(
@@ -26,11 +26,10 @@ Future<void> main() async {
   FlutterNativeSplash.remove();
 }
 
-Future<void> initApp() async {
+Future<void> _initApp() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await NotificationService().initNotification();
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -39,7 +38,6 @@ Future<void> initApp() async {
   Hive.init(docDir.path);
 
   var favBox = await Hive.openBox(Constants.favBox);
-  // await Hive.box(Constants.favBox).clear();
 
   if (favBox.get(Constants.favListKey) == null) {
     favBox.put(Constants.favListKey, []);

@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 import 'package:new_wall/ui/screens/view_wallpaper/view_wallaper.dart';
+import 'package:new_wall/ui/theme/colors.dart';
 
 class WallpaperWidget extends ConsumerWidget {
   const WallpaperWidget({
@@ -69,8 +70,14 @@ class WallpaperWidget extends ConsumerWidget {
                     }
                   },
                   icon: isFav
-                      ? const Icon(Icons.favorite)
-                      : const Icon(Icons.favorite_border),
+                      ? const Icon(
+                          Icons.favorite,
+                          color: primary,
+                        )
+                      : const Icon(
+                          Icons.favorite_border,
+                          color: primary,
+                        ),
                   color: Colors.white,
                 ),
               ),
@@ -82,7 +89,7 @@ class WallpaperWidget extends ConsumerWidget {
             context,
             MaterialPageRoute(
               builder: (context) => ViewWallpaper(
-                wallpapersList: wallpaperList,
+                wallpapers: wallpaperList,
                 initialPage: index,
               ),
             ),

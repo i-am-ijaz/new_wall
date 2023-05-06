@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:getwidget/getwidget.dart';
@@ -18,14 +18,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:new_wall/models/wallpaper/wallpaper.dart';
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 
+final isVisibleProvider = StateProvider<bool>((ref) {
+  return false;
+});
+
 // ignore: must_be_immutable
 class ViewWallpaper extends ConsumerStatefulWidget {
   ViewWallpaper({
     Key? key,
-    required this.wallpapersList,
+    required this.wallpapers,
     required this.initialPage,
   }) : super(key: key);
-  final List<Wallpaper> wallpapersList;
+  final List<Wallpaper> wallpapers;
   int initialPage;
 
   @override
@@ -38,239 +42,161 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
   double _fileDownloadProgress = 0.0;
 
   bool _isDownloading = false;
-  late AnimationController controller;
-  late Animation<Offset> offset;
-  late AnimationController controller1;
-  late Animation<Offset> offset1;
+  late AnimationController _controller;
+  late Animation<Offset> _offset;
 
   @override
   void initState() {
     super.initState();
-    controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
 
-    offset = Tween<Offset>(
+    _offset = Tween<Offset>(
       begin: const Offset(0.0, 1.0),
       end: Offset.zero,
-    ).animate(controller);
-
-    controller1 =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
-
-    offset1 = Tween<Offset>(
-      begin: const Offset(1, 0),
-      end: Offset.zero,
-    ).animate(controller);
+    ).animate(_controller);
 
     _pageController = PageController(initialPage: widget.initialPage);
-    controller.forward();
-    controller1.forward();
+    _controller.forward();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
     final provider = ref.watch(favProvider);
-    var fav = provider.isFav(widget.wallpapersList[widget.initialPage]);
+    final isFav = provider.isFav(widget.wallpapers[widget.initialPage]);
+    final isVisible = ref.watch(isVisibleProvider);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        elevation: 0,
-        leadingWidth: 80,
-        leading: InkWell(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            decoration: const BoxDecoration(
-              color: primary,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: widget.wallpapersList.length,
-            onPageChanged: (index) {
-              setState(() {
-                widget.initialPage = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              return Hero(
-                tag: widget.wallpapersList[index].url,
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 2.0,
-                  scaleEnabled: true,
-                  child: CachedNetworkImage(
-                    imageUrl: widget.wallpapersList[index].url,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
-                ),
-              );
-            },
-          ),
-          if (_fileDownloadProgress > 0)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  height: size.height * 0.15,
-                  width: size.width * 0.4,
-                  child: Card(
-                    child: GFProgressBar(
-                      percentage: _fileDownloadProgress,
-                      radius: 80,
-                      lineHeight: 20,
-                      type: GFProgressType.circular,
-                      backgroundColor: Colors.black26,
-                      progressBarColor: GFColors.SUCCESS,
-                      child: Text(
-                        '${(_fileDownloadProgress * 100).ceil()}%',
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 34,
-              vertical: 24,
-            ),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SlideTransition(
-                position: offset,
-                child: Row(
-                  children: [
-                    Container(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 1000),
+          switchInCurve: Curves.fastOutSlowIn,
+          switchOutCurve: Curves.fastOutSlowIn,
+          child: !isVisible
+              ? AppBar(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  leadingWidth: 80,
+                  leading: InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
                       decoration: const BoxDecoration(
                         color: primary,
                         shape: BoxShape.circle,
                       ),
-                      child: IconButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(primary),
-                        ),
-                        onPressed: () async {
-                          if (_fileDownloadProgress > 0) {
-                            return;
-                          }
-                          if (_isDownloading) {
-                            return;
-                          }
-
-                          String url =
-                              widget.wallpapersList[widget.initialPage].url;
-
-                          await downloadWallpaper(url);
-                        },
-                        icon: const Icon(
-                          Icons.download,
-                          size: 30,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
-                          ),
-                          onPressed: () async => await setWallpaperBottomSheet(
-                            context,
-                            widget.wallpapersList[widget.initialPage].url,
-                          ),
-                          child: const Text("SET AS"),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
+                      child: const Icon(
+                        Icons.arrow_back,
                         color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: fav
-                            ? const Icon(
-                                Icons.favorite,
-                                color: primary,
-                                size: 30,
-                              )
-                            : const Icon(
-                                Icons.favorite_border,
-                                color: primary,
-                                size: 30,
-                              ),
-                        onPressed: () async => addRemoveToFavorities(
-                          fav,
-                          provider,
-                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                )
+              : const SizedBox(),
+        ),
+      ),
+      body: GestureDetector(
+        onTap: () => _onWallperTap(isVisible),
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: widget.wallpapers.length,
+              onPageChanged: (index) {
+                setState(() {
+                  widget.initialPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return Hero(
+                  tag: widget.wallpapers[index].url,
+                  child: InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 2.0,
+                    scaleEnabled: true,
+                    child: CachedNetworkImage(
+                      imageUrl: widget.wallpapers[index].url,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+            if (_fileDownloadProgress > 0)
+              FileDownloadingProgress(progress: _fileDownloadProgress),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 1000),
+              switchInCurve: Curves.fastOutSlowIn,
+              switchOutCurve: Curves.fastOutSlowIn,
+              child: !isVisible
+                  ? WallBottomActions(
+                      isFav: isFav,
+                      onDownload: _onDownload,
+                      onSetAs: _onSetAs,
+                      offset: _offset,
+                      onFavorities: () {
+                        _addRemoveToFavorities(isFav, provider);
+                      },
+                    )
+                  : const SizedBox(),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> showFileOpenSnackbar(File file, BuildContext context) async {
-    Future.delayed(const Duration(seconds: 3), () {
-      final snackBar = SnackBar(
-        content: const Text(
-          'Wallpaper downloaded successfully',
-          style: TextStyle(
-            fontSize: 16,
-          ),
-        ),
-        action: SnackBarAction(
-          label: 'Open',
-          onPressed: () async {
-            await openFile(
-              path: file.path,
-            );
-          },
-        ),
+  void _onWallperTap(bool isVisible) {
+    ref.read(isVisibleProvider.notifier).update((state) => !state);
+    if (isVisible) {
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
       );
-      if (_fileDownloadProgress == 0.0) {
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
-    });
+    } else {
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [],
+      );
+    }
   }
 
-  void addRemoveToFavorities(bool fav, FavWallpaperProvider provider) {
-    var wallpaper = widget.wallpapersList[widget.initialPage];
+  void _addRemoveToFavorities(bool fav, FavWallpaperProvider provider) {
+    var wallpaper = widget.wallpapers[widget.initialPage];
     fav ? provider.removeFromFav(wallpaper) : provider.addToFav(wallpaper);
   }
 
-  Future<File?> downloadWallpaper(String url) async {
+  Future<void> _onDownload() async {
+    if (_fileDownloadProgress > 0) {
+      return;
+    }
+    if (_isDownloading) {
+      return;
+    }
+
+    String url = widget.wallpapers[widget.initialPage].url;
+
+    await _downloadWallpaper(url);
+  }
+
+  Future<File?> _downloadWallpaper(String url) async {
     setState(() {
       _isDownloading = true;
     });
@@ -315,7 +241,7 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
             body: 'Wallpaper downloaded successfully! Tap to open',
             payload: file.path,
           );
-          await saveImageToGallery(file);
+          await _saveImageToGallery(file);
 
           setState(() {
             _fileDownloadProgress = 0;
@@ -332,7 +258,7 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
     return file;
   }
 
-  Future<void> saveImageToGallery(File file) async {
+  Future<void> _saveImageToGallery(File file) async {
     try {
       await GallerySaver.saveImage(
         file.path,
@@ -349,29 +275,127 @@ class _ViewWallpaperState extends ConsumerState<ViewWallpaper>
     var match = matches.elementAt(0);
     return Uri.decodeFull(match.group(2)!);
   }
+
+  Future<void> _onSetAs() async {
+    await setWallpaperBottomSheet(
+      context,
+      widget.wallpapers[widget.initialPage].url,
+    );
+  }
 }
 
-class ProgressDialogContent extends StatelessWidget {
-  const ProgressDialogContent({
-    Key? key,
-  }) : super(key: key);
+class FileDownloadingProgress extends StatelessWidget {
+  const FileDownloadingProgress({
+    super.key,
+    required this.progress,
+  });
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: const SizedBox(
-          height: 30,
-          width: 30,
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation(
-              GFColors.SUCCESS,
+    final size = MediaQuery.of(context).size;
+
+    return Align(
+      alignment: Alignment.center,
+      child: SizedBox(
+        height: size.height * 0.15,
+        width: size.width * 0.4,
+        child: Card(
+          child: GFProgressBar(
+            percentage: progress,
+            radius: 80,
+            lineHeight: 20,
+            type: GFProgressType.circular,
+            backgroundColor: Colors.black26,
+            progressBarColor: primary,
+            child: Text(
+              '${(progress * 100).ceil()}%',
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class WallBottomActions extends StatelessWidget {
+  const WallBottomActions({
+    super.key,
+    required this.isFav,
+    required this.onDownload,
+    required this.onSetAs,
+    required this.offset,
+    required this.onFavorities,
+  });
+  final bool isFav;
+  final VoidCallback onDownload;
+  final VoidCallback onSetAs;
+  final Animation<Offset> offset;
+  final VoidCallback onFavorities;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 34,
+        vertical: 24,
+      ),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: SlideTransition(
+          position: offset,
+          child: Row(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  color: primary,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(primary),
+                  ),
+                  onPressed: onDownload,
+                  icon: const Icon(
+                    Icons.download,
+                    size: 30,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    onPressed: onSetAs,
+                    child: const Text("SET AS"),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: isFav
+                      ? const Icon(
+                          Icons.favorite,
+                          color: primary,
+                          size: 30,
+                        )
+                      : const Icon(
+                          Icons.favorite_border,
+                          color: primary,
+                          size: 30,
+                        ),
+                  onPressed: onFavorities,
+                ),
+              ),
+            ],
           ),
         ),
       ),

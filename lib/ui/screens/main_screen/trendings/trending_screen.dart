@@ -5,6 +5,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:new_wall/providers/fav_wallpaper_provider.dart';
 import 'package:new_wall/providers/wallapers_provider.dart';
+import 'package:new_wall/ui/shared/shimmer_widgets/shimmer_wallpaper_widget.dart';
 import 'package:new_wall/ui/shared/wallpaper_widget.dart';
 
 class TrendingScreen extends ConsumerStatefulWidget {
@@ -43,16 +44,7 @@ class _TrendingScreenState extends ConsumerState<TrendingScreen> {
         // slivers: [
         // const CustomSliverAppBar(title: 'Trending'),
         child: _isWallsListEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 100),
-                  child: Column(
-                    children: const [
-                      CircularProgressIndicator(),
-                    ],
-                  ),
-                ),
-              )
+            ? const ShimmerWallpaperWidget()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
