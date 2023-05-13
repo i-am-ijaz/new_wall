@@ -28,13 +28,8 @@ class CustomSliverAppBar extends StatelessWidget {
   }
 }
 
-class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
-  const CustomAppBar({Key? key})
-      : preferredSize = const Size.fromHeight(50),
-        super(key: key);
-
-  @override
-  final Size preferredSize;
+class CustomAppBar extends StatelessWidget {
+  const CustomAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
